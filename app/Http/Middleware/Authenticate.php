@@ -14,6 +14,12 @@ class Authenticate
 {
     public function handle(Request $request, Closure $next): mixed {
         try {
+            if (is_null($request->bearerToken())) {
+                return response()->json([
+                    'message' => 'Acesso negado! Token de autenticação é obrigatório!',
+                    'data' => null
+                ], 403, [], JSON_UNESCAPED_UNICODE);
+            }
             $payload = JWT::decode($request->bearerToken(), new Key(env('JWT_SECRET'), 'HS256'));
 
             if (strtotime('NOW') > strtotime(date('Y-m-d H:i:s', strtotime($payload->login . ' +1 hours')))) {
@@ -42,7 +48,7 @@ class Authenticate
             ]);
 
             return response()->json([
-                'message' => 'Acesso negado!Token inválido',
+                'message' => 'Acesso negado! Token inválido.',
                 'data' => null
             ], 403, [], JSON_UNESCAPED_UNICODE);
         }
